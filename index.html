@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAZAPP — Agente de Vendas IA para WhatsApp | Atendimento 24h Automático</title>
+<meta name="description" content="Automatize seu WhatsApp com IA. Atende clientes 24h, fecha vendas e agenda horários enquanto você descansa. Setup em 48h. A partir de R$397/mês.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505;
+  --s1:#09090f;
+  --s2:#0e0e1a;
+  --s3:#131324;
+  --border:rgba(255,255,255,0.058);
+  --border-g:rgba(0,230,118,0.18);
+  --border-a:rgba(245,158,11,0.25);
+  --text:#F0F0F0;
+  --muted:#44445a;
+  --subtle:#80809a;
+  --accent:#FF6B00;
+  --green:#00E676;
+  --green-d:#00ba60;
+  --green-glow:rgba(0,230,118,0.11);
+  --amber:#F59E0B;
+  --amber-d:#d97706;
+  --blue:#1E3A5F;
+  --blue-l:#2a5080;
+  --coral:#FF6B6B;
+  --glass:rgba(255,255,255,0.035);
+  --glass-b:rgba(255,255,255,0.07);
+  --r:14px;
+  --r-sm:9px;
+  --font:'Inter',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+::selection{background:var(--green);color:#000}
+a{text-decoration:none;color:inherit}
+button{font-family:var(--font);cursor:none}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--green);border-radius:2px}
+
+/* SCROLL PROGRESS */
+#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--green),#00c8ff,var(--amber));z-index:99999;width:0%;transition:width .08s linear;will-change:width}
+
+/* CURSOR */
+#cursor{position:fixed;width:9px;height:9px;border-radius:50%;background:var(--green);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);will-change:transform;mix-blend-mode:difference}
+#cursor-ring{position:fixed;width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,230,118,0.4);pointer-events:none;z-index:99997;transform:translate(-50%,-50%);will-change:transform;transition:width .25s,height .25s,border-color .25s}
+#cursor.hov{width:5px;height:5px}
+#cursor-ring.hov{width:50px;height:50px;border-color:rgba(0,230,118,0.7)}
+@media(hover:none){#cursor,#cursor-ring{display:none}body,button{cursor:auto}}
+
+/* NOISE */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;opacity:.026;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* GRID BG */
+.grid-bg{position:absolute;inset:0;will-change:transform;
+  background-image:linear-gradient(rgba(0,230,118,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.018) 1px,transparent 1px);
+  background-size:64px 64px;pointer-events:none}
+.grid-floor{position:absolute;bottom:0;left:-20%;right:-20%;height:52%;pointer-events:none;will-change:transform;
+  background-image:linear-gradient(rgba(0,230,118,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.035) 1px,transparent 1px);
+  background-size:60px 60px;transform:perspective(600px) rotateX(50deg);transform-origin:bottom;
+  -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.5),transparent);mask-image:linear-gradient(to top,rgba(0,0,0,.5),transparent)}
+
+/* AURORA ORBS */
+.aurora-wrap{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.aurora-blob{position:absolute;border-radius:50%;filter:blur(100px)}
+.ab1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,230,118,.07),transparent 70%);top:-10%;left:-5%;animation:auroraFloat 12s ease-in-out infinite}
+.ab2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,200,255,.05),transparent 70%);top:20%;right:-10%;animation:auroraFloat 15s ease-in-out infinite reverse}
+.ab3{width:400px;height:400px;background:radial-gradient(circle,rgba(245,158,11,.04),transparent 70%);bottom:-10%;left:30%;animation:auroraFloat 10s ease-in-out infinite 3s}
+@keyframes auroraFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,30px) scale(.95)}}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:8000;padding:22px 48px;display:flex;align-items:center;justify-content:space-between;transition:all .4s}
+nav.scrolled{background:rgba(5,5,5,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:14px 48px}
+.logo{font-size:21px;font-weight:900;letter-spacing:-1px;display:flex;align-items:center;gap:2px}
+.logo-braz{color:var(--text)}
+.logo-app{color:var(--green)}
+.logo-dot{width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:2px;animation:gpulse 2s infinite}
+@keyframes gpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,.6)}50%{box-shadow:0 0 0 6px rgba(0,230,118,0)}}
+.nav-links{display:flex;gap:36px;align-items:center}
+.nav-links a{font-size:12.5px;color:var(--subtle);font-weight:500;letter-spacing:.3px;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--green);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{background:var(--green);color:#000;padding:10px 22px;border-radius:50px;font-size:12.5px;font-weight:800;letter-spacing:.3px;transition:all .25s;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-cta:hover{background:#1fff88;transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,230,118,.35)}
+.ham{display:none;flex-direction:column;gap:5px;padding:4px;z-index:9000;background:none;border:none}
+.ham span{width:22px;height:1.5px;background:var(--text);border-radius:2px;transition:all .3s;display:block}
+.ham.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0}
+.ham.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+/* HERO */
+#hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+#three-canvas{position:absolute;inset:0;z-index:0}
+.hero-grid-wrap{position:absolute;inset:0;z-index:1;overflow:hidden}
+.hero-radial{position:absolute;inset:0;background:radial-gradient(ellipse 65% 65% at 28% 50%,rgba(0,230,118,.055) 0%,transparent 65%),radial-gradient(ellipse 35% 35% at 78% 30%,rgba(0,200,255,.03) 0%,transparent 60%);pointer-events:none;z-index:2}
+.hero-inner{position:relative;z-index:3;width:100%;max-width:1160px;margin:0 auto;padding:0 48px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;will-change:transform}
+
+.hero-urgency{display:inline-flex;align-items:center;gap:8px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:50px;padding:5px 14px 5px 10px;margin-bottom:14px;animation:fadY .6s ease both}
+.hero-urgency-dot{width:7px;height:7px;border-radius:50%;background:var(--coral);flex-shrink:0;animation:gpulse 1.5s infinite}
+.hero-urgency span{font-size:11px;font-weight:700;color:var(--coral);letter-spacing:.4px}
+
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2);border-radius:50px;padding:5px 14px 5px 8px;margin-bottom:28px;animation:fadY .8s .1s ease both}
+.hero-tag-dot{width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,.14);display:flex;align-items:center;justify-content:center}
+.hero-tag-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);animation:gpulse 1.5s infinite}
+.hero-tag span{font-size:11.5px;font-weight:600;color:var(--green);letter-spacing:.5px}
+
+.hero-h1{font-size:clamp(42px,5.8vw,80px);font-weight:900;letter-spacing:-3px;line-height:1.0;margin-bottom:22px;animation:fadY .8s .2s ease both}
+.hero-h1 em{font-style:normal;background:linear-gradient(135deg,var(--green) 0%,#00c8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-h1 .ghost{-webkit-text-stroke:1px rgba(255,255,255,.18);color:transparent;-webkit-text-fill-color:transparent;display:block}
+
+.hero-p{font-size:16px;color:var(--subtle);line-height:1.75;max-width:460px;margin-bottom:36px;animation:fadY .8s .3s ease both}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;animation:fadY .8s .4s ease both}
+.hero-mono{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.5px;margin-top:28px;animation:fadY .8s .5s ease both;display:flex;align-items:center;gap:8px}
+.hero-mono::before{content:'';width:20px;height:1px;background:var(--muted)}
+.hero-phone-wrap{position:relative;display:flex;justify-content:center;animation:fadY .8s .3s ease both}
+.hero-glow-orb{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.08),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 30px;border-radius:50px;font-size:14px;font-weight:700;transition:all .25s;border:none;letter-spacing:.2px;position:relative;overflow:hidden}
+.btn-primary{background:var(--green);color:#000;font-weight:800}
+.btn-primary:hover{background:#1fff88;transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,230,118,.35)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px)}
+.btn-green{background:var(--green);color:#000;font-weight:800}
+.btn-green:hover{background:#1fff88;transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,230,118,.3)}
+.btn-amber{background:var(--amber);color:#000;font-weight:800}
+.btn-amber:hover{background:#fbbf24;transform:translateY(-2px);box-shadow:0 14px 36px rgba(245,158,11,.3)}
+
+/* STATS */
+.stats{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--s1);padding:36px 48px}
+.stats-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.stat{text-align:center;padding:20px 0;position:relative}
+.stat::after{content:'';position:absolute;right:0;top:20%;bottom:20%;width:1px;background:var(--border)}
+.stat:last-child::after{display:none}
+.stat-val{font-size:40px;font-weight:900;letter-spacing:-2px;line-height:1;color:var(--text)}
+.stat-val span{color:var(--green)}
+.stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px}
+.stat-sub{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:3px}
+
+/* GUARANTEE BAR */
+.guarantee-bar{background:linear-gradient(135deg,rgba(0,230,118,.04),rgba(0,200,255,.02));border-bottom:1px solid rgba(0,230,118,.07);padding:16px 48px}
+.guarantee-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:36px;flex-wrap:wrap}
+.g-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--subtle);font-weight:500}
+.g-item strong{color:var(--text);font-weight:700}
+.g-sep{width:1px;height:18px;background:var(--border)}
+
+/* PROBLEM SECTION */
+#problem{background:var(--bg);position:relative;overflow:hidden;padding:100px 48px}
+#problem::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 100%,rgba(255,107,107,.025),transparent)}
+.prob-head{text-align:center;max-width:680px;margin:0 auto 60px}
+.prob-kicker{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--coral);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:10px}
+.prob-kicker::before{content:'//';color:var(--muted)}
+.prob-h{font-size:clamp(28px,3.5vw,46px);font-weight:800;letter-spacing:-2px;line-height:1.12;margin-bottom:14px}
+.prob-p{font-size:16px;color:var(--subtle);line-height:1.75}
+.prob-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1160px;margin:0 auto}
+.prob-card{background:rgba(255,107,107,.03);border:1px solid rgba(255,107,107,.1);border-radius:var(--r);padding:28px 22px;transition:all .35s;position:relative;overflow:hidden}
+.prob-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,107,107,.5),transparent);transform:scaleX(0);transition:transform .4s}
+.prob-card:hover{border-color:rgba(255,107,107,.25);transform:translateY(-4px)}
+.prob-card:hover::before{transform:scaleX(1)}
+.prob-icon{font-size:28px;margin-bottom:16px}
+.prob-stat{font-size:38px;font-weight:900;letter-spacing:-2px;color:var(--coral);margin-bottom:6px;line-height:1}
+.prob-label{font-size:13px;color:var(--subtle);line-height:1.55}
+
+/* SECTIONS */
+section{padding:110px 48px}
+.wrap{max-width:1160px;margin:0 auto}
+.sec-tag{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-tag::before{content:'//';color:var(--muted)}
+.sec-h{font-size:clamp(30px,3.8vw,50px);font-weight:800;letter-spacing:-2px;line-height:1.1;margin-bottom:14px}
+.sec-p{font-size:16px;color:var(--subtle);line-height:1.75;max-width:520px}
+
+/* HOW */
+#how{background:var(--s1);position:relative}
+#how::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,230,118,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.012) 1px,transparent 1px);background-size:48px 48px}
+.steps-wrap{display:grid;grid-template-columns:repeat(3,1fr);margin-top:64px;position:relative;z-index:1}
+.steps-wrap::before{content:'';position:absolute;top:52px;left:calc(16.66% + 32px);right:calc(16.66% + 32px);height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.step{padding:40px 32px;border:1px solid var(--border);margin:-1px 0 0 -1px;position:relative;transition:background .35s,border-color .35s}
+.step:hover{background:rgba(0,230,118,.025);border-color:var(--border-g)}
+.step-idx{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:28px;display:block}
+.step-icon-wrap{width:56px;height:56px;border-radius:16px;border:1px solid var(--border-g);background:rgba(0,230,118,.06);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:22px;transition:all .35s}
+.step:hover .step-icon-wrap{transform:scale(1.06);background:rgba(0,230,118,.1)}
+.step h3{font-size:17px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px}
+.step p{font-size:13.5px;color:var(--subtle);line-height:1.7}
+
+/* FEATURES */
+#features{background:var(--bg);position:relative;overflow:hidden}
+.feat-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.feat-list{margin-top:40px;display:flex;flex-direction:column;gap:0}
+.feat-item{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--border);cursor:default;transition:all .3s}
+.feat-item:last-child{border:none}
+.feat-item:hover{padding-left:8px}
+.feat-ico{width:40px;height:40px;border-radius:12px;border:1px solid var(--border-g);background:rgba(0,230,118,.05);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all .3s}
+.feat-item:hover .feat-ico{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.35)}
+.feat-item h4{font-size:14px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.feat-item p{font-size:13px;color:var(--subtle);line-height:1.6}
+
+/* PHONE 3D */
+.phone-outer{position:relative;width:300px;margin:0 auto}
+.phone-halo{position:absolute;inset:-60px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.07),transparent 70%);animation:halo 4s ease-in-out infinite;pointer-events:none}
+@keyframes halo{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.phone-3d{width:300px;height:620px;background:linear-gradient(155deg,#141420,#08080f);border-radius:50px;border:1px solid rgba(255,255,255,.08);position:relative;box-shadow:0 60px 120px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04) inset,0 1px 0 rgba(255,255,255,.12) inset;transform:perspective(1200px) rotateY(-10deg) rotateX(3deg);transform-style:preserve-3d;transition:transform .6s ease;will-change:transform}
+.phone-outer:hover .phone-3d{transform:perspective(1200px) rotateY(-3deg) rotateX(1deg)}
+.phone-btn-r{position:absolute;right:-3px;top:120px;width:3px;height:36px;background:rgba(255,255,255,.08);border-radius:0 3px 3px 0}
+.phone-btn-l1{position:absolute;left:-3px;top:100px;width:3px;height:24px;background:rgba(255,255,255,.08);border-radius:3px 0 0 3px}
+.phone-btn-l2{position:absolute;left:-3px;top:136px;width:3px;height:24px;background:rgba(255,255,255,.08);border-radius:3px 0 0 3px}
+.phone-notch{width:100px;height:32px;background:#08080f;border-radius:0 0 22px 22px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;border:1px solid rgba(255,255,255,.06);border-top:none}
+.phone-screen{position:absolute;inset:12px;border-radius:40px;overflow:hidden;background:#0b141a;display:flex;flex-direction:column}
+.wa-topbar{background:#202c33;padding:14px 14px 10px;display:flex;align-items:center;gap:10px;padding-top:42px;flex-shrink:0}
+.wa-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00E676,#00ba60);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;flex-shrink:0}
+.wa-info{flex:1}
+.wa-name{font-size:13px;font-weight:600;color:#e9edef}
+.wa-online{font-size:10px;color:#00E676;display:flex;align-items:center;gap:4px}
+.wa-online::before{content:'';width:5px;height:5px;border-radius:50%;background:#00E676;animation:gpulse 2s infinite}
+.wa-msgs{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.wm{max-width:80%;padding:8px 11px;border-radius:9px;font-size:11.5px;line-height:1.55;color:#e9edef;word-break:break-word}
+.wm.in{background:#202c33;border-bottom-left-radius:2px;align-self:flex-start}
+.wm.out{background:#005c4b;border-bottom-right-radius:2px;align-self:flex-end}
+.wm .ts{font-size:9px;color:#8696a0;text-align:right;margin-top:3px}
+.typing-ind{align-self:flex-start;background:#202c33;border-radius:9px;border-bottom-left-radius:2px;padding:10px 14px;display:flex;gap:4px;align-items:center}
+.typing-ind span{width:6px;height:6px;border-radius:50%;background:#8696a0;animation:tdot .9s infinite}
+.typing-ind span:nth-child(2){animation-delay:.15s}
+.typing-ind span:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-5px);opacity:1}}
+.wa-input{background:#202c33;padding:10px 12px;flex-shrink:0;display:flex;align-items:center;gap:8px}
+.wa-input-bar{flex:1;background:#2a3942;border-radius:20px;height:36px;display:flex;align-items:center;padding:0 14px;font-size:11px;color:#8696a0}
+
+/* BEFORE / AFTER */
+#before-after{background:var(--s1);position:relative;overflow:hidden}
+#before-after::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,230,118,.008) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.008) 1px,transparent 1px);background-size:48px 48px}
+.ba-inner{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px;position:relative;z-index:1}
+.ba-card{border-radius:var(--r);padding:36px 32px;position:relative;overflow:hidden}
+.ba-before{background:rgba(255,107,107,.04);border:1px solid rgba(255,107,107,.12)}
+.ba-after{background:rgba(0,230,118,.04);border:1px solid rgba(0,230,118,.14)}
+.ba-badge{display:inline-flex;align-items:center;gap:6px;border-radius:50px;padding:4px 12px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;font-family:var(--mono)}
+.ba-before .ba-badge{background:rgba(255,107,107,.1);color:var(--coral);border:1px solid rgba(255,107,107,.2)}
+.ba-after .ba-badge{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2)}
+.ba-title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:24px}
+.ba-before .ba-title{color:rgba(255,255,255,.65)}
+.ba-after .ba-title{color:var(--text)}
+.ba-list{display:flex;flex-direction:column;gap:13px}
+.ba-item{display:flex;align-items:flex-start;gap:12px;font-size:13.5px;line-height:1.55}
+.ba-before .ba-item{color:rgba(255,255,255,.45)}
+.ba-after .ba-item{color:var(--subtle)}
+.ba-check{font-size:14px;flex-shrink:0;margin-top:1px}
+.ba-vs{display:flex;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--s1);border:2px solid var(--border);align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--muted);font-family:var(--mono);z-index:2}
+
+/* PRICING */
+#pricing{background:var(--bg);position:relative;overflow:hidden}
+#pricing::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,230,118,.01) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,.01) 1px,transparent 1px);background-size:48px 48px}
+.pricing-note{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:8px}
+.pricing-note::before{content:'';width:12px;height:1px;background:var(--muted)}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;position:relative;z-index:1}
+.plan{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:36px 28px;position:relative;transition:all .35s;cursor:pointer;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.plan:hover{border-color:var(--border-g);transform:translateY(-4px);box-shadow:0 24px 60px rgba(0,230,118,.06)}
+.plan.selected{border-color:var(--green);background:rgba(0,230,118,.04)}
+.plan.selected::after{content:'';position:absolute;inset:0;border-radius:var(--r);box-shadow:0 0 0 1px rgba(0,230,118,.35),0 20px 60px rgba(0,230,118,.08);pointer-events:none}
+.plan-sel-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:10px;font-weight:800;padding:3px 14px;border-radius:0 0 10px 10px;letter-spacing:.5px;opacity:0;transition:opacity .3s;white-space:nowrap}
+.plan.selected .plan-sel-badge{opacity:1}
+.plan-pop{position:absolute;top:18px;right:18px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--amber);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.plan-name{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:18px}
+.plan-price{font-size:54px;font-weight:900;letter-spacing:-3px;line-height:1;display:flex;align-items:flex-start;gap:2px;color:var(--text)}
+.plan-price sup{font-size:18px;font-weight:600;margin-top:12px;color:var(--subtle)}
+.plan-mo{font-size:13px;color:var(--muted);margin-top:4px}
+.plan-setup{font-size:11px;color:var(--green);font-weight:600;margin-top:6px;margin-bottom:28px;font-family:var(--mono)}
+.plan-sep{height:1px;background:var(--border);margin-bottom:24px}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:32px}
+.plan-feats li{font-size:12.5px;color:var(--subtle);display:flex;align-items:flex-start;gap:9px;line-height:1.4}
+.plan-feats li .ck{font-size:11px;color:var(--green);font-weight:700;flex-shrink:0;width:14px;margin-top:1px}
+.plan-feats li .nd{font-size:11px;color:var(--muted);flex-shrink:0;width:14px}
+.plan-feats li.off{color:var(--muted)}
+.plan-btn{width:100%;padding:13px;border-radius:50px;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;border:1px solid var(--border);background:transparent;color:var(--text);letter-spacing:.3px;font-family:var(--font)}
+.plan-btn:hover{border-color:var(--green);color:var(--green)}
+.plan.selected .plan-btn{background:var(--green);border-color:var(--green);color:#000;font-weight:800;box-shadow:0 8px 28px rgba(0,230,118,.25)}
+.discounts{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;justify-content:center;position:relative;z-index:1}
+.discount-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:50px;padding:6px 14px;font-size:12px;color:var(--amber);font-weight:600}
+.discount-tag::before{content:'🏷️';font-size:13px}
+.plan-hint{text-align:center;margin-top:16px;position:relative;z-index:1}
+.plan-hint span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+#selected-plan-label{color:var(--green);font-weight:700}
+
+/* PLANO NEGOCIÁVEL */
+.plan-nego{background:linear-gradient(135deg,var(--glass),rgba(0,200,255,.02));border:1px solid rgba(0,200,255,.15);border-radius:var(--r);padding:40px;margin-top:16px;position:relative;z-index:1;overflow:hidden;cursor:default;transition:border-color .35s;backdrop-filter:blur(12px)}
+.plan-nego:hover{border-color:rgba(0,200,255,.3)}
+.plan-nego::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,.5),transparent)}
+.nego-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.2);border-radius:50px;padding:4px 12px;font-size:10px;font-weight:700;color:#00c8ff;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;font-family:var(--mono)}
+.nego-title{font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.nego-sub{font-size:14px;color:var(--subtle);margin-bottom:32px}
+.nego-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.nego-price-wrap{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.nego-price{font-size:64px;font-weight:900;letter-spacing:-3px;color:var(--text);transition:all .3s}
+.nego-price sup{font-size:22px;font-weight:600;color:var(--subtle);vertical-align:top;margin-top:14px}
+.nego-price-mo{font-size:15px;color:var(--muted);margin-bottom:4px}
+.nego-price-note{font-family:var(--mono);font-size:11px;color:#00c8ff;margin-bottom:24px}
+.nego-slider-wrap{margin-bottom:28px}
+.nego-slider-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px}
+input[type=range].nego-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--border);outline:none;cursor:pointer}
+input[type=range].nego-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);border:3px solid var(--bg);box-shadow:0 0 12px rgba(0,230,118,.5);cursor:pointer;transition:transform .2s}
+input[type=range].nego-slider:hover::-webkit-slider-thumb{transform:scale(1.2)}
+input[type=range].nego-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--green);border:3px solid var(--bg);box-shadow:0 0 12px rgba(0,230,118,.5);cursor:pointer}
+.nego-count{font-size:12px;color:var(--subtle);font-family:var(--mono);margin-bottom:20px}
+.nego-count span{color:var(--green);font-weight:700}
+.nego-btn-wrap{display:flex;flex-direction:column;gap:8px}
+.nego-setup{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.nego-feats-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.nego-feats{display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto;padding-right:4px}
+.nego-feats::-webkit-scrollbar{width:2px}
+.nego-feats::-webkit-scrollbar-thumb{background:rgba(0,230,118,.3);border-radius:2px}
+.nf-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;transition:all .3s;border:1px solid transparent}
+.nf-item.on{background:rgba(0,230,118,.04);border-color:rgba(0,230,118,.08)}
+.nf-item.off{opacity:.35}
+.nf-check{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
+.nf-item.on .nf-check{background:rgba(0,230,118,.15);color:var(--green)}
+.nf-item.off .nf-check{background:rgba(255,255,255,.04);color:var(--muted)}
+.nf-icon{font-size:14px;flex-shrink:0}
+.nf-name{font-size:12px;color:var(--text);transition:color .3s;line-height:1.3}
+.nf-item.off .nf-name{color:var(--muted)}
+.nf-tier{font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:10px;flex-shrink:0;margin-left:auto}
+.nf-tier.pro{background:rgba(245,158,11,.1);color:var(--amber)}
+.nf-tier.premium{background:rgba(0,200,255,.08);color:#00c8ff}
+
+/* TESTIMONIALS */
+#testimonials{background:var(--blue);padding:110px 0;position:relative;overflow:hidden}
+#testimonials::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,230,118,.03),transparent)}
+.t-fade-l,.t-fade-r{position:absolute;top:0;bottom:0;width:180px;z-index:2;pointer-events:none}
+.t-fade-l{left:0;background:linear-gradient(to right,var(--blue),transparent)}
+.t-fade-r{right:0;background:linear-gradient(to left,var(--blue),transparent)}
+.t-head{padding:0 48px;text-align:center;margin-bottom:56px;position:relative;z-index:1}
+.t-head .sec-p{margin:0 auto}
+.t-track-wrap{position:relative}
+.t-track{display:flex;gap:18px;width:max-content;animation:tscroll 38s linear infinite}
+.t-track:hover{animation-play-state:paused}
+.t-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:28px;width:300px;flex-shrink:0;transition:all .3s;backdrop-filter:blur(8px)}
+.t-card:hover{border-color:rgba(0,230,118,.2);transform:translateY(-4px);background:rgba(255,255,255,.08)}
+.t-stars{font-size:12px;letter-spacing:3px;color:var(--amber);margin-bottom:14px}
+.t-text{font-size:13.5px;color:rgba(255,255,255,.7);line-height:1.72;margin-bottom:20px}
+.t-author{display:flex;align-items:center;gap:12px}
+.t-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.t-name{font-size:13px;font-weight:700;letter-spacing:-.2px}
+.t-role{font-size:11px;color:rgba(255,255,255,.4)}
+@keyframes tscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* FAQ */
+#faq{background:var(--s1);position:relative}
+.faq-wrap{max-width:720px;margin:56px auto 0}
+.faq-item{border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:4px;transition:border-color .3s}
+.faq-item.open{border-color:var(--border-g)}
+.faq-q{padding:20px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;user-select:none}
+.faq-q-t{font-size:14.5px;font-weight:600;letter-spacing:-.2px}
+.faq-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);transition:all .3s;flex-shrink:0}
+.faq-item.open .faq-icon{background:var(--green);border-color:var(--green);color:#000;transform:rotate(45deg)}
+.faq-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.faq-body-inner{padding:0 22px 20px;font-size:13.5px;color:var(--subtle);line-height:1.75}
+.faq-item.open .faq-body{max-height:280px}
+
+/* CTA FINAL */
+#cta-final{background:var(--bg);padding:120px 48px;position:relative;overflow:hidden;text-align:center}
+.cta-orb{position:absolute;width:700px;height:400px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,230,118,.06),transparent 70%);left:50%;bottom:-100px;transform:translateX(-50%);pointer-events:none}
+.cta-orb2{position:absolute;width:400px;height:300px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,200,255,.04),transparent 70%);left:15%;top:-50px;pointer-events:none}
+.cta-inner{position:relative;z-index:1;max-width:680px;margin:0 auto}
+.cta-plan-show{display:inline-flex;align-items:center;gap:8px;background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2);border-radius:50px;padding:5px 16px;margin-bottom:24px;font-size:12px;color:var(--green);font-family:var(--mono);min-height:30px;transition:opacity .3s}
+.cta-plan-show.hidden{opacity:0;pointer-events:none}
+.cta-h{font-size:clamp(34px,4.5vw,58px);font-weight:900;letter-spacing:-2.5px;line-height:1.08;margin-bottom:18px}
+.cta-p{font-size:16px;color:var(--subtle);line-height:1.7;margin-bottom:16px}
+.cta-urgency{display:inline-flex;align-items:center;gap:8px;background:rgba(255,107,107,.07);border:1px solid rgba(255,107,107,.2);border-radius:50px;padding:7px 18px;margin-bottom:32px;font-size:12px;color:var(--coral);font-weight:700;font-family:var(--mono)}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-note{margin-top:22px;font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.cta-note span{color:var(--green)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);background:var(--s1);padding:44px 48px}
+.foot-inner{max-width:1160px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+.foot-logo{font-size:19px;font-weight:900;letter-spacing:-1px}
+.foot-logo span{color:var(--green)}
+.foot-copy{font-size:11.5px;color:var(--muted);text-align:center;font-family:var(--mono)}
+.foot-links{display:flex;gap:24px}
+.foot-links a{font-size:12px;color:var(--muted);transition:color .2s}
+.foot-links a:hover{color:var(--text)}
+
+/* FLOATING WA BUTTON */
+#wa-float{position:fixed;bottom:28px;right:28px;z-index:7000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.wa-float-label{background:rgba(5,5,5,.92);backdrop-filter:blur(12px);border:1px solid var(--border-g);border-radius:50px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--green);white-space:nowrap;opacity:0;transform:translateX(10px);transition:all .3s;pointer-events:none}
+#wa-float:hover .wa-float-label{opacity:1;transform:translateX(0)}
+.wa-float-btn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 32px rgba(37,211,102,.4);transition:all .3s;cursor:none;border:none;position:relative}
+.wa-float-btn:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(37,211,102,.55)}
+.wa-float-btn::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(37,211,102,.3);animation:waPulse 2.5s infinite}
+@keyframes waPulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+
+/* TOAST */
+#toast{position:fixed;bottom:104px;left:28px;z-index:7000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:rgba(9,9,15,.94);backdrop-filter:blur(16px);border:1px solid var(--border-g);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;min-width:280px;max-width:320px;transform:translateX(-110%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast-item.show{transform:translateX(0)}
+.toast-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.toast-name{font-size:12.5px;font-weight:700;color:var(--text)}
+.toast-msg{font-size:11.5px;color:var(--subtle);margin-top:1px}
+.toast-check{margin-left:auto;color:var(--green);font-size:14px;flex-shrink:0}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(36px);transition:opacity .75s ease,transform .75s ease;will-change:transform,opacity}
+.rv.vis{opacity:1;transform:none}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}
+.rv-l{opacity:0;transform:translateX(-30px);transition:opacity .7s,transform .7s;will-change:transform,opacity}
+.rv-l.vis{opacity:1;transform:none}
+.rv-r{opacity:0;transform:translateX(30px);transition:opacity .7s .15s,transform .7s .15s;will-change:transform,opacity}
+.rv-r.vis{opacity:1;transform:none}
+
+/* ANIMATIONS */
+@keyframes fadY{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes scrollpulse{0%,100%{opacity:.3;transform:scaleY(.6);transform-origin:top}50%{opacity:1;transform:scaleY(1);transform-origin:top}}
+
+/* MOBILE */
+@media(max-width:900px){
+  nav{padding:16px 22px}nav.scrolled{padding:12px 22px}
+  .nav-links{display:none;position:fixed;inset:0;background:rgba(5,5,5,.97);backdrop-filter:blur(20px);flex-direction:column;justify-content:center;align-items:center;gap:36px;z-index:7999}
+  .nav-links.open{display:flex}
+  .nav-links a{font-size:22px;color:var(--text)}
+  .ham{display:flex}
+  .nav-cta{display:none}
+  section{padding:70px 22px}
+  #problem{padding:70px 22px}
+  .guarantee-bar{padding:14px 22px}
+  .guarantee-inner{gap:16px}
+  .g-sep{display:none}
+  .stats{padding:28px 22px}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .stat::after{display:none}
+  .hero-inner{grid-template-columns:1fr;padding:0 22px;padding-top:120px}
+  .hero-phone-wrap{display:none}
+  .steps-wrap{grid-template-columns:1fr}
+  .steps-wrap::before{display:none}
+  .step{border:1px solid var(--border);border-radius:var(--r);margin:4px 0}
+  .feat-inner{grid-template-columns:1fr;gap:48px}
+  .ba-inner{grid-template-columns:1fr;gap:16px}
+  .ba-vs{display:none}
+  .plans{grid-template-columns:1fr}
+  .nego-inner{grid-template-columns:1fr}
+  .nego-right{display:none}
+  .prob-cards{grid-template-columns:repeat(2,1fr)}
+  .foot-inner{flex-direction:column;text-align:center}
+  .foot-links{justify-content:center}
+  .hero-h1{letter-spacing:-2px}
+  .t-fade-l,.t-fade-r{width:40px}
+  .plan-nego{padding:28px 20px}
+  #toast{display:none}
+}
+@media(max-width:480px){
+  .hero-h1{font-size:36px}.sec-h{font-size:28px}.cta-h{font-size:30px}
+  .stats-inner{grid-template-columns:1fr 1fr}
+  .discounts{flex-direction:column;align-items:center}
+  .prob-cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="prog" aria-hidden="true"></div>
+<div id="cursor" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
+
+<!-- FLOATING WA -->
+<div id="wa-float">
+  <span class="wa-float-label">Falar agora no WhatsApp</span>
+  <a href="https://wa.me/5592994685220?text=Oi!%20Quero%20saber%20mais%20sobre%20o%20BRAZAPP." target="_blank" rel="noopener" class="wa-float-btn" aria-label="Falar no WhatsApp">💬</a>
+</div>
+
+<!-- TOAST SOCIAL PROOF -->
+<div id="toast" aria-live="polite" aria-atomic="true"></div>
+
+<!-- NAV -->
+<nav id="nav" role="navigation" aria-label="Menu principal">
+  <div class="logo" aria-label="BRAZAPP"><span class="logo-braz">BRAZ</span><span class="logo-app">APP</span><div class="logo-dot" aria-hidden="true"></div></div>
+  <div class="nav-links" id="navLinks">
+    <a href="#how">Como funciona</a>
+    <a href="#features">Recursos</a>
+    <a href="#pricing">Planos</a>
+    <a href="#testimonials">Resultados</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cta-final" class="nav-cta">Quero meu agente →</a>
+  </div>
+  <button class="ham" id="ham" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<section id="hero" aria-label="Seção principal">
+  <canvas id="three-canvas" aria-hidden="true"></canvas>
+  <div class="hero-grid-wrap" aria-hidden="true"><div class="grid-bg"></div><div class="grid-floor"></div></div>
+  <div class="aurora-wrap" aria-hidden="true"><div class="aurora-blob ab1"></div><div class="aurora-blob ab2"></div><div class="aurora-blob ab3"></div></div>
+  <div class="hero-radial" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-urgency"><div class="hero-urgency-dot" aria-hidden="true"></div><span>⚠ Apenas 4 vagas disponíveis em Joinville neste mês</span></div>
+      <div class="hero-tag"><div class="hero-tag-dot" aria-hidden="true"></div><span>Automação inteligente para negócios brasileiros</span></div>
+      <h1 class="hero-h1">
+        Seu negócio<br>
+        <em>vendendo</em>
+        <span class="ghost">sempre.</span>
+      </h1>
+      <p class="hero-p">O BRAZAPP é um agente de vendas IA para WhatsApp — atende, qualifica e fecha negócios na sua linguagem, com seus preços, no seu estilo. Você dorme, ele trabalha.</p>
+      <div class="hero-actions">
+        <a href="#cta-final" class="btn btn-primary">🚀 Quero meu agente</a>
+        <a href="#how" class="btn btn-ghost">Ver como funciona</a>
+      </div>
+      <div class="hero-mono">// Setup completo em 48h · R$300 setup + 1 semana de ajustes grátis</div>
+    </div>
+    <div class="hero-phone-wrap" aria-hidden="true">
+      <div class="hero-glow-orb"></div>
+      <div class="phone-outer">
+        <div class="phone-halo"></div>
+        <div class="phone-3d" id="heroPhone">
+          <div class="phone-btn-r"></div><div class="phone-btn-l1"></div><div class="phone-btn-l2"></div>
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="wa-topbar">
+              <div class="wa-av">BA</div>
+              <div class="wa-info"><div class="wa-name">Barbearia do André</div><div class="wa-online">online</div></div>
+            </div>
+            <div class="wa-msgs" id="waBody"></div>
+            <div class="wa-input"><div class="wa-input-bar">Mensagem</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a href="#problem" aria-label="Rolar para baixo" style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;animation:fadY .8s .8s both;will-change:transform">
+    <div style="width:1px;height:40px;background:linear-gradient(to bottom,rgba(0,230,118,.5),transparent);animation:scrollpulse 1.8s infinite"></div>scroll
+  </a>
+</section>
+
+<!-- STATS -->
+<div class="stats" role="region" aria-label="Estatísticas">
+  <div class="stats-inner">
+    <div class="stat rv"><div class="stat-val"><span id="c1">0</span>/7</div><div class="stat-lbl">Horas de atendimento</div><div class="stat-sub">// sem pausas</div></div>
+    <div class="stat rv d1"><div class="stat-val"><span id="c2">0</span>s</div><div class="stat-lbl">Tempo médio de resposta</div><div class="stat-sub">// instantâneo</div></div>
+    <div class="stat rv d2"><div class="stat-val"><span id="c3">0</span>%</div><div class="stat-lbl">Mais conversão</div><div class="stat-sub">// vs. sem resposta</div></div>
+    <div class="stat rv d3"><div class="stat-val">R$<span id="c4">0</span></div><div class="stat-lbl">Economizados/mês</div><div class="stat-sub">// vs. atendente humano</div></div>
+  </div>
+</div>
+
+<!-- GARANTIAS -->
+<div class="guarantee-bar" role="region" aria-label="Garantias">
+  <div class="guarantee-inner">
+    <div class="g-item">⚡ <strong>Setup em 48h</strong></div>
+    <div class="g-sep" aria-hidden="true"></div>
+    <div class="g-item">🔧 <strong>1 semana de ajustes</strong> incluída</div>
+    <div class="g-sep" aria-hidden="true"></div>
+    <div class="g-item">🔓 <strong>Sem fidelidade</strong></div>
+    <div class="g-sep" aria-hidden="true"></div>
+    <div class="g-item">💬 <strong>Suporte</strong> incluso</div>
+    <div class="g-sep" aria-hidden="true"></div>
+    <div class="g-item">✅ <strong>Cancele</strong> quando quiser</div>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<div id="problem">
+  <div class="prob-head rv">
+    <div class="prob-kicker">O problema</div>
+    <h2 class="prob-h">Você perde dinheiro toda vez que não responde um WhatsApp.</h2>
+    <p class="prob-p">Cada mensagem ignorada é um cliente que foi pro concorrente. Acontece enquanto você está ocupado, dormindo ou simplesmente com o celular no bolso.</p>
+  </div>
+  <div class="prob-cards">
+    <div class="prob-card rv d1">
+      <div class="prob-icon">📱</div>
+      <div class="prob-stat">73%</div>
+      <div class="prob-label">dos clientes escolhem o primeiro negócio que responde</div>
+    </div>
+    <div class="prob-card rv d2">
+      <div class="prob-icon">🌙</div>
+      <div class="prob-stat">40%</div>
+      <div class="prob-label">das mensagens chegam fora do horário — e ficam sem resposta</div>
+    </div>
+    <div class="prob-card rv d3">
+      <div class="prob-icon">💸</div>
+      <div class="prob-stat">R$1.5k</div>
+      <div class="prob-label">é o custo mínimo de um atendente humano — que ainda tira férias</div>
+    </div>
+    <div class="prob-card rv d4">
+      <div class="prob-icon">⏱️</div>
+      <div class="prob-stat">3min</div>
+      <div class="prob-label">é o tempo máximo que um cliente espera antes de ir embora</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="rv"><div class="sec-tag">Como funciona</div><h2 class="sec-h">Três passos.<br>Seu negócio no automático.</h2></div>
+    <div class="steps-wrap">
+      <div class="step rv d1"><span class="step-idx">// 01</span><div class="step-icon-wrap" aria-hidden="true">📋</div><h3>Você preenche o formulário</h3><p>Seus serviços, preços, horários e estilo de comunicação. Leva menos de 10 minutos. Sem tecnicidade.</p></div>
+      <div class="step rv d2"><span class="step-idx">// 02</span><div class="step-icon-wrap" aria-hidden="true">⚡</div><h3>A gente configura tudo</h3><p>Nossa equipe treina o agente com os dados do seu negócio e conecta ao seu WhatsApp. Pronto em 48h com 1 semana de ajustes incluída.</p></div>
+      <div class="step rv d3"><span class="step-idx">// 03</span><div class="step-icon-wrap" aria-hidden="true">🤖</div><h3>Seu agente começa a vender</h3><p>24 horas por dia, 7 dias por semana. Você é avisado apenas quando precisar de atendimento humano de verdade.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="feat-inner">
+      <div class="rv-l">
+        <div class="sec-tag">Recursos</div>
+        <h2 class="sec-h">Mais que um chatbot.<br>Um vendedor de IA.</h2>
+        <p class="sec-p">Configurado com a identidade do seu negócio. Atende, qualifica, detecta vendas e fecha agendamentos — sem você precisar estar online.</p>
+        <div class="feat-list">
+          <div class="feat-item"><div class="feat-ico" aria-hidden="true">🧠</div><div><h4>Memória de conversa</h4><p>Lembra o contexto acumulado — respostas inteligentes, não genéricas.</p></div></div>
+          <div class="feat-item"><div class="feat-ico" aria-hidden="true">🎯</div><div><h4>Detecção automática de venda</h4><p>Identifica interesse de compra ou agendamento e notifica você instantaneamente.</p></div></div>
+          <div class="feat-item"><div class="feat-ico" aria-hidden="true">🎵</div><div><h4>Áudio, vídeo e imagem</h4><p>Recebe e responde sobre mídias enviadas pelo cliente — não só texto.</p></div></div>
+          <div class="feat-item"><div class="feat-ico" aria-hidden="true">📊</div><div><h4>Painel de pedidos em tempo real</h4><p>Veja tudo que chegou — pedidos, agendamentos e conversas organizados.</p></div></div>
+        </div>
+      </div>
+      <div class="rv-r">
+        <div class="phone-outer" style="width:280px">
+          <div class="phone-halo"></div>
+          <div class="phone-3d" style="width:280px;height:580px" id="featPhone">
+            <div class="phone-btn-r"></div><div class="phone-btn-l1"></div><div class="phone-btn-l2"></div>
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="wa-topbar"><div class="wa-av">LA</div><div class="wa-info"><div class="wa-name">Lanchonete da Ana</div><div class="wa-online">online</div></div></div>
+              <div class="wa-msgs" id="waBody2"></div>
+              <div class="wa-input"><div class="wa-input-bar">Mensagem</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEFORE / AFTER -->
+<section id="before-after">
+  <div class="wrap">
+    <div class="rv" style="text-align:center">
+      <div class="sec-tag" style="justify-content:center">Transformação</div>
+      <h2 class="sec-h">A vida antes e depois<br>do BRAZAPP.</h2>
+    </div>
+    <div class="ba-inner">
+      <div class="ba-card ba-before rv-l">
+        <div class="ba-badge">😰 Antes</div>
+        <div class="ba-title">Sem atendimento automático</div>
+        <div class="ba-list">
+          <div class="ba-item"><span class="ba-check">❌</span> Mensagem às 23h — você dormindo, cliente esperando</div>
+          <div class="ba-item"><span class="ba-check">❌</span> Cliente perde paciência e vai para o concorrente</div>
+          <div class="ba-item"><span class="ba-check">❌</span> Você para o que está fazendo para responder</div>
+          <div class="ba-item"><span class="ba-check">❌</span> Sábado e domingo: você ou ninguém</div>
+          <div class="ba-item"><span class="ba-check">❌</span> Preços e horários explicados na raça toda hora</div>
+          <div class="ba-item"><span class="ba-check">❌</span> Venda perdida para quem respondeu primeiro</div>
+        </div>
+      </div>
+      <div class="ba-vs" aria-hidden="true">VS</div>
+      <div class="ba-card ba-after rv-r">
+        <div class="ba-badge">✅ Depois</div>
+        <div class="ba-title">Com o BRAZAPP ativo</div>
+        <div class="ba-list">
+          <div class="ba-item"><span class="ba-check">✅</span> Mensagem às 23h — agente responde em 3 segundos</div>
+          <div class="ba-item"><span class="ba-check">✅</span> Cliente recebe o que precisa, agenda ou compra</div>
+          <div class="ba-item"><span class="ba-check">✅</span> Você só é avisado quando necessário de verdade</div>
+          <div class="ba-item"><span class="ba-check">✅</span> Fins de semana, feriados — sem diferença</div>
+          <div class="ba-item"><span class="ba-check">✅</span> Catálogo, preços e horários enviados automaticamente</div>
+          <div class="ba-item"><span class="ba-check">✅</span> Venda fechada antes do concorrente perceber</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="rv" style="text-align:center">
+      <div class="sec-tag" style="justify-content:center">Planos</div>
+      <h2 class="sec-h">Investimento que se paga<br>no primeiro mês.</h2>
+      <p class="sec-p" style="margin:0 auto">8 clientes recuperados já cobrem o plano. Selecione e fale pelo WhatsApp com o plano escolhido.</p>
+      <div class="pricing-note" style="justify-content:center">// Clique no plano · Botão WhatsApp já carrega a mensagem certa</div>
+    </div>
+
+    <div class="plans" id="plansGrid">
+      <div class="plan rv d1" data-plan="mini" data-name="Mini" data-price="97">
+        <div class="plan-sel-badge" aria-hidden="true">✓ Selecionado</div>
+        <div class="plan-name">Mini</div>
+        <div class="plan-price"><sup>R$</sup>97</div>
+        <div class="plan-mo">por mês</div>
+        <div class="plan-setup">+ R$300 configuração única</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats" aria-label="Recursos do plano Mini">
+          <li><span class="ck" aria-hidden="true">✓</span> Agente ativo 24h no WhatsApp</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Respostas automáticas aos clientes</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Personalização básica (nome e segmento)</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Notificação instantânea pro dono</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Catálogo de serviços por texto</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Memória de conversa</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Painel de pedidos</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Áudio e imagem</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Handoff para humano</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Suporte por WhatsApp</li>
+        </ul>
+        <button class="plan-btn">Escolher Mini</button>
+      </div>
+
+      <div class="plan rv d2" data-plan="base" data-name="Base" data-price="197">
+        <div class="plan-sel-badge" aria-hidden="true">✓ Selecionado</div>
+        <div class="plan-pop">Mais popular</div>
+        <div class="plan-name">Base</div>
+        <div class="plan-price"><sup>R$</sup>197</div>
+        <div class="plan-mo">por mês</div>
+        <div class="plan-setup">+ R$300 configuração única</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats" aria-label="Recursos do plano Base">
+          <li><span class="ck" aria-hidden="true">✓</span> Tudo do Mini, mais:</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Memória de conversa (contexto acumulado)</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Personalização completa (nome, tom, estilo)</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Detecção automática de venda/agendamento</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Painel web de pedidos em tempo real</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Recebe e responde sobre áudio, vídeo e imagem</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Envia imagens, PDFs e catálogo automaticamente</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Handoff para humano</li>
+          <li class="off"><span class="nd" aria-hidden="true">—</span> Suporte por WhatsApp</li>
+        </ul>
+        <button class="plan-btn">Escolher Base</button>
+      </div>
+
+      <div class="plan rv d3" data-plan="pro" data-name="Pro" data-price="297">
+        <div class="plan-sel-badge" aria-hidden="true">✓ Selecionado</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>R$</sup>297</div>
+        <div class="plan-mo">por mês</div>
+        <div class="plan-setup">+ R$300 configuração única</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-feats" aria-label="Recursos do plano Pro">
+          <li><span class="ck" aria-hidden="true">✓</span> Tudo do Base, mais:</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Handoff humano (cliente pede, dono assume)</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Pausa automática quando dono digita</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Religação automática ao fechar ou após 30min</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Relatório mensal de atendimentos</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Suporte por WhatsApp</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Atualizações mensais do agente</li>
+        </ul>
+        <button class="plan-btn">Escolher Pro</button>
+      </div>
+    </div>
+
+    <div class="discounts rv">
+      <div class="discount-tag">10% no plano trimestral</div>
+      <div class="discount-tag">15% no plano semestral</div>
+      <div class="discount-tag">1 mês grátis por indicação</div>
+    </div>
+
+    <div class="plan-nego rv" id="planNego">
+      <div class="nego-badge">⚡ Personalizável</div>
+      <div class="nego-title">Plano Negociável</div>
+      <div class="nego-sub">Defina seu orçamento. Veja exatamente quais recursos cabem. Negocie direto com a gente.</div>
+      <div class="nego-inner">
+        <div class="nego-left">
+          <div class="nego-price-wrap">
+            <div class="nego-price"><sup>R$</sup><span id="negoVal">197</span></div>
+          </div>
+          <div class="nego-price-mo">por mês + R$300 setup único</div>
+          <div class="nego-price-note nego-tier-label" id="negoTierLabel">// Equivale ao Plano Básico</div>
+          <div class="nego-slider-wrap">
+            <div class="nego-slider-labels"><span>R$50</span><span>R$350</span></div>
+            <input type="range" class="nego-slider" id="negoSlider" min="50" max="350" value="197" step="5" aria-label="Selecionar valor do plano negociável">
+          </div>
+          <div class="nego-count">Recursos incluídos: <span id="negoCount">8</span> de <span id="negoTotal">17</span></div>
+          <div class="nego-btn-wrap">
+            <a id="negoCta" href="#" target="_blank" rel="noopener" class="btn btn-green" style="justify-content:center">💬 Negociar este plano</a>
+            <div class="nego-setup">// + R$300 de configuração única</div>
+          </div>
+        </div>
+        <div class="nego-right">
+          <div class="nego-feats-title">Recursos incluídos no valor selecionado</div>
+          <div class="nego-feats" id="negoFeats" role="list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="plan-hint rv"><span>// Plano selecionado: <span id="selected-plan-label">nenhum</span> — role para baixo para falar no WhatsApp</span></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" aria-label="Depoimentos de clientes">
+  <div class="t-fade-l" aria-hidden="true"></div>
+  <div class="t-fade-r" aria-hidden="true"></div>
+  <div class="t-head rv">
+    <div class="sec-tag" style="justify-content:center">Resultados reais</div>
+    <h2 class="sec-h">Quem usa, não volta atrás.</h2>
+    <p class="sec-p">Negócios reais de Joinville e região que já atendem no automático.</p>
+  </div>
+  <div class="t-track-wrap">
+    <div class="t-track" id="tTrack" aria-label="Depoimentos"></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="rv" style="text-align:center"><div class="sec-tag" style="justify-content:center">FAQ</div><h2 class="sec-h">Perguntas frequentes.</h2></div>
+    <div class="faq-wrap" id="faqList" role="list"></div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta-final">
+  <div class="cta-orb" aria-hidden="true"></div>
+  <div class="cta-orb2" aria-hidden="true"></div>
+  <div class="cta-inner rv">
+    <div class="cta-plan-show hidden" id="ctaPlanShow" aria-live="polite">// Plano: <span id="ctaPlanName">—</span></div>
+    <div class="sec-tag" style="justify-content:center">Pronto para começar?</div>
+    <h2 class="cta-h">Seu próximo cliente<br>não pode esperar.</h2>
+    <p class="cta-p">Configure seu agente hoje. Em 48 horas ele já está atendendo por você — com 1 semana de ajustes incluída no setup.</p>
+    <div class="cta-urgency" aria-live="polite">⚠ Apenas <span id="vagasCount">4</span> vagas disponíveis em Joinville este mês</div>
+    <div class="cta-btns">
+      <a id="ctaWaBtn" href="https://wa.me/5592994685220?text=Oi!%20Quero%20saber%20mais%20sobre%20o%20BRAZAPP." target="_blank" rel="noopener" class="btn btn-green"><span aria-hidden="true" style="font-size:20px">💬</span> Falar no WhatsApp</a>
+      <a href="#pricing" class="btn btn-ghost">Ver planos</a>
+    </div>
+    <p class="cta-note">// <span>Setup em 48h</span> · <span>1 semana de ajustes</span> · <span>Sem fidelidade</span></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-logo">BRAZ<span>APP</span></div>
+    <div class="foot-copy">© 2026 BRAZAPP — Automação inteligente para negócios brasileiros<br>Joinville · SC · Brasil</div>
+    <div class="foot-links">
+      <a href="#">Privacidade</a>
+      <a href="#">Termos</a>
+      <a href="#cta-final">Contato</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+const IS_MOBILE = window.innerWidth < 768;
+const WA = '5592994685220';
+
+/* SCROLL PROGRESS */
+const prog = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  prog.style.width = (scrollY / h * 100) + '%';
+}, {passive: true});
+
+/* CURSOR */
+const cur = document.getElementById('cursor');
+const curR = document.getElementById('cursor-ring');
+let cx = -100, cy = -100, rx = -100, ry = -100;
+document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; }, {passive: true});
+(function cl() { rx += (cx - rx) * .12; ry += (cy - ry) * .12; cur.style.left = cx + 'px'; cur.style.top = cy + 'px'; curR.style.left = rx + 'px'; curR.style.top = ry + 'px'; requestAnimationFrame(cl); })();
+document.querySelectorAll('a,button,.plan,.faq-q,.t-card,.nf-item,.prob-card,.ba-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.classList.add('hov'); curR.classList.add('hov'); });
+  el.addEventListener('mouseleave', () => { cur.classList.remove('hov'); curR.classList.remove('hov'); });
+});
+
+/* NAV */
+const nav = document.getElementById('nav');
+const ham = document.getElementById('ham');
+const navL = document.getElementById('navLinks');
+window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 50), {passive: true});
+ham.addEventListener('click', () => {
+  const open = ham.classList.toggle('open');
+  navL.classList.toggle('open', open);
+  ham.setAttribute('aria-expanded', open);
+});
+navL.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { ham.classList.remove('open'); navL.classList.remove('open'); ham.setAttribute('aria-expanded', 'false'); }));
+
+/* THREE.JS */
+(function () {
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha: true, antialias: true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
+  camera.position.z = 7;
+  function resize() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+  resize(); window.addEventListener('resize', resize, {passive: true});
+  const ico = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(2.2, 1)), new THREE.LineBasicMaterial({color: 0x00E676, transparent: true, opacity: .16}));
+  ico.position.set(3.2, 0, -1); scene.add(ico);
+  const ico2 = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1.2, 0)), new THREE.LineBasicMaterial({color: 0x00c8ff, transparent: true, opacity: .09}));
+  ico2.position.set(3.2, 0, -1); scene.add(ico2);
+  const oct = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(.7, 0)), new THREE.LineBasicMaterial({color: 0xF59E0B, transparent: true, opacity: .2}));
+  oct.position.set(-3.5, 1.5, -2); scene.add(oct);
+  const N = 900, pPos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { pPos[i * 3] = (Math.random() - .5) * 20; pPos[i * 3 + 1] = (Math.random() - .5) * 14; pPos[i * 3 + 2] = (Math.random() - .5) * 10; }
+  const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({size: .016, color: 0x00E676, transparent: true, opacity: .28, sizeAttenuation: true}));
+  scene.add(pts);
+  let mx = 0, my = 0, tmx = 0, tmy = 0, t = 0;
+  document.addEventListener('mousemove', e => { tmx = (e.clientX / innerWidth - .5) * .6; tmy = (e.clientY / innerHeight - .5) * .4; }, {passive: true});
+  (function loop() {
+    requestAnimationFrame(loop); t += .004;
+    mx += (tmx - mx) * .05; my += (tmy - my) * .05;
+    ico.rotation.x = t * .3 + my * .5; ico.rotation.y = t * .5 + mx * .5; ico.rotation.z = t * .15;
+    ico2.rotation.x = -t * .4 + my * .3; ico2.rotation.y = -t * .6 + mx * .3;
+    oct.rotation.x = t * .6; oct.rotation.y = t * .4; oct.position.y = 1.5 + Math.sin(t * .8) * .3;
+    pts.rotation.y = t * .04 + mx * .1; pts.rotation.x = my * .08;
+    renderer.render(scene, camera);
+  })();
+})();
+
+/* REVEAL */
+const revObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); revObs.unobserve(e.target); } });
+}, {threshold: .12});
+document.querySelectorAll('.rv,.rv-l,.rv-r').forEach(el => revObs.observe(el));
+
+/* COUNTERS */
+function counter(el, to, dur = 1600) {
+  let s = null;
+  (function step(ts) { if (!s) s = ts; const p = Math.min((ts - s) / dur, 1), e = 1 - Math.pow(1 - p, 3); el.textContent = Math.floor(e * to); if (p < 1) requestAnimationFrame(step); })(performance.now());
+}
+const cObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { counter(document.getElementById('c1'), 24); counter(document.getElementById('c2'), 3); counter(document.getElementById('c3'), 320); counter(document.getElementById('c4'), 2400); cObs.disconnect(); }
+}, {threshold: .5});
+cObs.observe(document.querySelector('.stats'));
+
+/* WA CHAT */
+const msgs1 = [
+  {t: 'in', m: 'Oi! Tem horário amanhã de manhã?'},
+  {t: 'out', m: 'Oi! 😊 Disponível às 9h, 10h e 11h. Qual prefere?', d: 950},
+  {t: 'in', m: '9h perfeito! Quanto fica o corte?'},
+  {t: 'out', m: 'Corte simples R$50, com barba R$75 ✂️', d: 750},
+  {t: 'in', m: 'Só o corte. Me anota como João!'},
+  {t: 'out', m: 'Feito, João! ✅ Amanhã às 9h. Te espero! 🤙', d: 700},
+];
+const msgs2 = [
+  {t: 'in', m: 'Faz entrega até o centro?'},
+  {t: 'out', m: 'Fazemos sim! 🛵 Taxa R$5. Pedido mínimo R$25.', d: 800},
+  {t: 'in', m: 'Me manda o cardápio'},
+  {t: 'out', m: 'Claro! 🍔 X-Burguer R$18 · X-Bacon R$22 · Frango R$16. Vai querer algo?', d: 900},
+  {t: 'in', m: '1 x-bacon + coca zero'},
+  {t: 'out', m: 'Anotado! 🧾 Total R$27. PIX ou dinheiro?', d: 750},
+];
+function runChat(body, msgs) {
+  let idx = 0;
+  const now = () => { const d = new Date(); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  const addMsg = m => { const d = document.createElement('div'); d.className = 'wm ' + m.t; d.innerHTML = m.m + `<div class="ts">${now()}</div>`; body.appendChild(d); body.scrollTop = body.scrollHeight; };
+  const addTyp = () => { const d = document.createElement('div'); d.className = 'typing-ind'; d.id = 'ty' + body.id; d.innerHTML = '<span></span><span></span><span></span>'; body.appendChild(d); body.scrollTop = body.scrollHeight; };
+  const remTyp = () => { const t = document.getElementById('ty' + body.id); if (t) t.remove(); };
+  function next() {
+    if (idx >= msgs.length) { setTimeout(() => { body.innerHTML = ''; idx = 0; setTimeout(next, 800); }, 3500); return; }
+    const m = msgs[idx++];
+    if (m.t === 'out') { addTyp(); setTimeout(() => { remTyp(); addMsg(m); setTimeout(next, 1100); }, m.d || 800); }
+    else { setTimeout(() => { addMsg(m); setTimeout(next, 500); }, 400); }
+  }
+  setTimeout(next, 1200);
+}
+runChat(document.getElementById('waBody'), msgs1);
+runChat(document.getElementById('waBody2'), msgs2);
+
+/* PHONE TILT */
+function phoneTilt(el) {
+  if (!el || IS_MOBILE) return;
+  document.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    const dx = Math.max(-8, Math.min(8, (e.clientX - (r.left + r.width / 2)) / r.width * 16));
+    const dy = Math.max(-5, Math.min(5, (e.clientY - (r.top + r.height / 2)) / r.height * 10));
+    el.style.transform = `perspective(1200px) rotateY(${-10 + dx}deg) rotateX(${3 - dy}deg)`;
+  }, {passive: true});
+}
+phoneTilt(document.getElementById('heroPhone'));
+phoneTilt(document.getElementById('featPhone'));
+
+/* PARALLAX — multi-layer */
+if (!IS_MOBILE) {
+  const heroInner = document.querySelector('.hero-inner');
+  const gridBg = document.querySelector('.grid-bg');
+  const gridFloor = document.querySelector('.grid-floor');
+  const auroraBlobs = document.querySelectorAll('.aurora-blob');
+  window.addEventListener('scroll', () => {
+    const y = scrollY;
+    if (y < innerHeight * 1.5) {
+      if (heroInner) heroInner.style.transform = `translateY(${y * .18}px)`;
+      if (gridBg) gridBg.style.transform = `translateY(${y * .06}px)`;
+      if (gridFloor) gridFloor.style.transform = `perspective(600px) rotateX(50deg) translateY(${-y * .04}px)`;
+      auroraBlobs.forEach((b, i) => { b.style.transform = `translateY(${y * (.05 + i * .03)}px)`; });
+    }
+  }, {passive: true});
+}
+
+/* PLAN SELECTION */
+const planMsgs = {
+  mini: 'Oi! Quero o plano Mini do BRAZAPP (R$97/mês + R$300 setup). Pode me dar mais informações?',
+  base: 'Oi! Quero o plano Base do BRAZAPP (R$197/mês + R$300 setup). Pode me dar mais informações?',
+  pro: 'Oi! Quero o plano Pro do BRAZAPP (R$297/mês + R$300 setup). Pode me dar mais informações?',
+};
+const defaultMsg = 'Oi! Quero saber mais sobre o BRAZAPP — agente de vendas IA para WhatsApp.';
+let currentPlan = null;
+function setWABtn(msg) { document.getElementById('ctaWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`; }
+function updatePlanUI(planEl) {
+  const key = planEl.dataset.plan, name = planEl.dataset.name, price = planEl.dataset.price;
+  document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+  planEl.classList.add('selected');
+  currentPlan = key;
+  document.getElementById('selected-plan-label').textContent = `${name} — R$${price}/mês`;
+  const cs = document.getElementById('ctaPlanShow'); cs.classList.remove('hidden');
+  document.getElementById('ctaPlanName').textContent = `${name} · R$${price}/mês`;
+  setWABtn(planMsgs[key]);
+}
+document.querySelectorAll('.plan').forEach(plan => {
+  plan.addEventListener('click', () => updatePlanUI(plan));
+  plan.querySelector('.plan-btn').addEventListener('click', e => {
+    e.stopPropagation(); updatePlanUI(plan);
+    setTimeout(() => document.getElementById('cta-final').scrollIntoView({behavior: 'smooth'}), 300);
+  });
+});
+setWABtn(defaultMsg);
+
+/* PLANO NEGOCIÁVEL */
+const FEATURES = [
+  {price: 30,  name: 'Agente ativo 24h no WhatsApp',                   icon: '🤖', tier: 'base'},
+  {price: 55,  name: 'Respostas automáticas aos clientes',             icon: '💬', tier: 'base'},
+  {price: 75,  name: 'Personalização básica (nome e segmento)',        icon: '🎨', tier: 'base'},
+  {price: 97,  name: 'Notificação instantânea pro dono',               icon: '🔔', tier: 'base'},
+  {price: 115, name: 'Catálogo de serviços por texto',                 icon: '📋', tier: 'base'},
+  {price: 130, name: 'Memória de conversa (contexto acumulado)',       icon: '🧠', tier: 'pro'},
+  {price: 150, name: 'Personalização completa (nome, tom, estilo)',    icon: '✨', tier: 'pro'},
+  {price: 165, name: 'Detecção automática de venda/agendamento',       icon: '🎯', tier: 'pro'},
+  {price: 180, name: 'Painel web de pedidos em tempo real',            icon: '📊', tier: 'pro'},
+  {price: 197, name: 'Recebe e responde sobre áudio, vídeo e imagem',  icon: '🎵', tier: 'pro'},
+  {price: 220, name: 'Envia imagens, PDFs e catálogo automaticamente', icon: '📁', tier: 'pro'},
+  {price: 240, name: 'Handoff humano (cliente pede, dono assume)',     icon: '👤', tier: 'premium'},
+  {price: 255, name: 'Pausa automática quando dono digita',            icon: '⏸️', tier: 'premium'},
+  {price: 268, name: 'Religação automática após fechar ou 30min',      icon: '🔄', tier: 'premium'},
+  {price: 280, name: 'Relatório mensal de atendimentos',               icon: '📈', tier: 'premium'},
+  {price: 290, name: 'Atualizações mensais do agente',                 icon: '♾️', tier: 'premium'},
+  {price: 297, name: 'Suporte por WhatsApp',                           icon: '⭐', tier: 'premium'},
+];
+const slider = document.getElementById('negoSlider');
+const negoValEl = document.getElementById('negoVal');
+const negoTierEl = document.getElementById('negoTierLabel');
+const negoCountEl = document.getElementById('negoCount');
+const negoTotalEl = document.getElementById('negoTotal');
+const negoFeatsEl = document.getElementById('negoFeats');
+const negoCta = document.getElementById('negoCta');
+negoTotalEl.textContent = FEATURES.length;
+FEATURES.forEach((f, i) => {
+  const row = document.createElement('div');
+  row.className = 'nf-item'; row.id = 'nf' + i; row.setAttribute('role', 'listitem');
+  const tierBadge = f.tier === 'pro' ? '<span class="nf-tier pro">PRO</span>' : f.tier === 'premium' ? '<span class="nf-tier premium">PREMIUM</span>' : '';
+  row.innerHTML = `<div class="nf-check">✓</div><div class="nf-icon" aria-hidden="true">${f.icon}</div><div class="nf-name">${f.name}</div>${tierBadge}`;
+  negoFeatsEl.appendChild(row);
+});
+function updateNego() {
+  const val = parseInt(slider.value);
+  negoValEl.textContent = val;
+  const pct = ((val - 50) / (350 - 50)) * 100;
+  slider.style.background = `linear-gradient(90deg,var(--green) ${pct}%,var(--border) ${pct}%)`;
+  let tier = 'none', tierTxt = '// Selecione um valor acima de R$30';
+  if (val >= 297) { tier = 'premium'; tierTxt = '// ✨ Plano Pro completo'; }
+  else if (val >= 197) { tier = 'pro'; tierTxt = '// ✓ Equivale ao Plano Base'; }
+  else if (val >= 97)  { tier = 'basico'; tierTxt = '// ✓ Equivale ao Plano Mini'; }
+  else if (val >= 50)  { tierTxt = '// Plano customizado — abaixo do Mini'; }
+  negoTierEl.textContent = tierTxt;
+  negoTierEl.className = 'nego-price-note nego-tier-label ' + tier;
+  let count = 0;
+  FEATURES.forEach((f, i) => {
+    const row = document.getElementById('nf' + i);
+    const on = val >= f.price;
+    row.classList.toggle('on', on); row.classList.toggle('off', !on);
+    row.querySelector('.nf-check').textContent = on ? '✓' : '×';
+    if (on) count++;
+  });
+  negoCountEl.textContent = count;
+  const included = FEATURES.filter((_, i) => val >= FEATURES[i].price).map(f => f.name);
+  const waMsg = `Oi! Tenho interesse no plano personalizado do BRAZAPP com orçamento de R$${val}/mês.\n\nRecursos incluídos: ${included.join(', ')}.\n\nPode me dar mais informações?`;
+  negoCta.href = `https://wa.me/${WA}?text=${encodeURIComponent(waMsg)}`;
+}
+slider.addEventListener('input', updateNego, {passive: true});
+updateNego();
+
+/* TESTIMONIALS */
+const tData = [
+  {s: 5, t: 'Minha barbearia respondia 20 mensagens/dia, perdia metade enquanto cortava. Agora o agente responde tudo. Recuperei 4 clientes por semana.', n: 'Carlos Mendes', r: 'Barbearia do Carlos · Joinville', c: '#00E676'},
+  {s: 5, t: 'Pensei que ia parecer robótico, mas minha cliente nem percebeu. Fechei 3 agendamentos num sábado de madrugada.', n: 'Priscila Andrade', r: 'Clínica Estética Glow · Araquari', c: '#E91E8C'},
+  {s: 5, t: 'Recuperei o investimento na primeira semana. O restaurante ficava sem atender pedidos à noite — agora registra tudo.', n: 'Douglas Souza', r: 'Lanchonete do Dog · Joinville', c: '#2196F3'},
+  {s: 5, t: 'Em 48h tava funcionando. Recomendo pra qualquer negócio que usa WhatsApp. Produto top de linha.', n: 'Ana Beatriz', r: 'Passo Certo Calçados · Joinville', c: '#9C27B0'},
+  {s: 5, t: 'Tentei contratar atendente — saía R$1.500/mês. O BRAZAPP faz a mesma coisa por R$397 e ainda funciona à noite.', n: 'Roberto Lima', r: 'Auto Center Lima · Joinville', c: '#F59E0B'},
+  {s: 5, t: 'Suporte incrível. Qualquer dúvida, resposta na hora. Sistema configurado exatamente no jeito que minha loja fala.', n: 'Fernanda Costa', r: 'Studio Fem · Araquari', c: '#00E676'},
+  {s: 5, t: 'Meu consultório recebia ligação às 23h pedindo horário. Agora o WhatsApp resolve tudo. Muito mais profissional.', n: 'Dr. Paulo Ramos', r: 'Clínica Ramos · Joinville', c: '#00c8ff'},
+];
+const track = document.getElementById('tTrack');
+[...tData, ...tData].forEach(d => {
+  const init = d.n.split(' ').map(w => w[0]).join('').slice(0, 2);
+  const el = document.createElement('div'); el.className = 't-card';
+  el.innerHTML = `<div class="t-stars">${'★'.repeat(d.s)}</div><div class="t-text">"${d.t}"</div><div class="t-author"><div class="t-av" style="background:${d.c}">${init}</div><div><div class="t-name">${d.n}</div><div class="t-role">${d.r}</div></div></div>`;
+  track.appendChild(el);
+});
+
+/* FAQ */
+const faqs = [
+  {q: 'Funciona com qualquer número de WhatsApp?', a: 'Sim. Conectamos ao seu número atual do WhatsApp Business ou pessoal — você não precisa mudar nada.'},
+  {q: 'O cliente vai perceber que é uma IA?', a: 'Dificilmente. O agente responde com a linguagem, serviços e estilo do seu negócio. Quando perguntado diretamente, pode ser configurado para ser transparente — sua escolha.'},
+  {q: 'E se precisar de atendimento humano?', a: 'O agente te notifica imediatamente e você entra na conversa exatamente de onde parou — sem perder histórico. Disponível no plano Pro e Premium.'},
+  {q: 'Quanto tempo leva para configurar?', a: 'Em até 48 horas o agente está ativo. O setup inclui 1 semana de ajustes para calibrar tudo certinho.'},
+  {q: 'Posso cancelar quando quiser?', a: 'Sim. Sem contrato de fidelidade. Cancele com 30 dias de aviso prévio. Sem multas, sem burocracia.'},
+  {q: 'Como funciona a cobrança?', a: 'O setup (R$300) é único no início — inclui configuração completa + 1 semana de ajustes. A mensalidade é cobrada via PIX ou cartão a partir de R$397/mês.'},
+  {q: 'O que é o Plano Negociável?', a: 'Você define seu orçamento e o simulador mostra exatamente quais recursos cabem. Cada funcionalidade tem um peso interno — quanto maior o valor, mais recursos desbloqueados. Fale com a gente e feche um plano personalizado.'},
+  {q: 'Funciona para qualquer tipo de negócio?', a: 'Sim — barbearia, restaurante, clínica, loja, imobiliária, pet shop, consultório e muito mais. Se atende via WhatsApp, o BRAZAPP funciona.'},
+];
+const faqList = document.getElementById('faqList');
+faqs.forEach(f => {
+  const item = document.createElement('div'); item.className = 'faq-item'; item.setAttribute('role', 'listitem');
+  item.innerHTML = `<div class="faq-q" role="button" tabindex="0" aria-expanded="false"><span class="faq-q-t">${f.q}</span><span class="faq-icon" aria-hidden="true">+</span></div><div class="faq-body"><div class="faq-body-inner">${f.a}</div></div>`;
+  const btn = item.querySelector('.faq-q');
+  const toggle = () => { const open = item.classList.contains('open'); faqList.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open')); if (!open) { item.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); } else { btn.setAttribute('aria-expanded', 'false'); } };
+  btn.addEventListener('click', toggle);
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+  faqList.appendChild(item);
+});
+
+/* TOAST SOCIAL PROOF */
+const toastData = [
+  {name: 'Carlos M.', msg: 'acabou de contratar o plano Pro', color: '#00E676'},
+  {name: 'Ana B.', msg: 'contratou o plano Básico agora há pouco', color: '#E91E8C'},
+  {name: 'Roberto L.', msg: 'ativou o BRAZAPP na auto center', color: '#F59E0B'},
+  {name: 'Priscila A.', msg: 'contratou o plano Pro · Clínica', color: '#2196F3'},
+  {name: 'Douglas S.', msg: 'expandiu para o plano Premium', color: '#9C27B0'},
+];
+const toastContainer = document.getElementById('toast');
+let toastIdx = 0;
+function showToast() {
+  const d = toastData[toastIdx % toastData.length]; toastIdx++;
+  const init = d.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+  const el = document.createElement('div'); el.className = 'toast-item';
+  el.innerHTML = `<div class="toast-av" style="background:${d.color}">${init}</div><div><div class="toast-name">${d.name}</div><div class="toast-msg">${d.msg}</div></div><div class="toast-check">✓</div>`;
+  toastContainer.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 500); }, 4200);
+}
+setTimeout(() => { showToast(); setInterval(showToast, 7000); }, 5000);
+</script>
+</body>
+</html>
